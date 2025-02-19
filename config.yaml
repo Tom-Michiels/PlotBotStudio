@@ -1,0 +1,36 @@
+scribble:
+  min_segments: 3
+  max_segments: 200
+  improvement_threshold: 0.0001   # Stop if overall improvement is less than 1%
+
+segment:
+  length_min: 10 
+  length_max: 30
+  delta_min: -2.0   # was -pi/2
+  delta_max: 2.0    # was pi/2
+
+stroke:
+  thickness: 1
+
+colors:
+  - [0, 0, 0]         # black
+
+candidates:
+  segment: 20         # number of candidate segments per step
+  start: 2000          # number of candidate starting positions for new scribbles
+
+plotter:
+  serial_port: ""     # leave empty to auto-search for /dev/cu.usb*
+  baudrate: 115200
+  x_min: 10 
+  x_max: 260
+  y_min: 10 
+  y_max: 260
+  z_up: 28
+  z_down: 23 
+  g92: [270, 0, 45]
+  feedrate: 20000
+
+canvas:
+  width: 800 
+  height: 800 
