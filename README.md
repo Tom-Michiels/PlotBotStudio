@@ -2,7 +2,7 @@
 
 PlotBot Studio transforms your images into beautifully detailed pen-drawings, capturing every nuance with precision and artistic flair. Using sophisticated algorithms, it converts images into a series of continuous lines and arcs, perfect for plotting with mechanical plotters or CNC machines.
 
-![Example Output](Demo/ekster.jpeg)
+![Flow](Demo/flow.png)
 
 ## Features
 

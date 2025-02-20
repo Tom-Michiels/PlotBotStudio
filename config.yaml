@@ -11,6 +11,7 @@ segment:
 
 stroke:
   thickness: 1
+  respect_white_areas: true  # New option to prevent drawing on white areas
 
 colors:
   - [0, 0, 0]         # black
@@ -32,5 +33,5 @@ plotter:
   feedrate: 20000
 
 canvas:
-  width: 800 
-  height: 800 
+  width: 1000 
+  height: 1000
