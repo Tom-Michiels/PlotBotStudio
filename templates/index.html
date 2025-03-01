@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlotBot Studio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background-color: #3498db;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+        
+        .main-container {
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+            min-height: 80vh;
+        }
+        
+        .tab-content {
+            padding: 20px 0;
+        }
+        
+        .dropzone {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            padding: 60px 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .dropzone:hover, .dropzone.dragover {
+            border-color: #3498db;
+            background-color: #e8f4fc;
+        }
+        
+        .preview-container {
+            margin-top: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-render {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+        
+        .btn-render:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        
+        .btn-plot {
+            background-color: #2ecc71;
+            border-color: #2ecc71;
+        }
+        
+        .btn-plot:hover {
+            background-color: #27ae60;
+            border-color: #27ae60;
+        }
+        
+        .btn-stop {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+        }
+        
+        .btn-stop:hover {
+            background-color: #c0392b;
+            border-color: #c0392b;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+        }
+        
+        .config-container {
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #3498db;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #333;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <span class="navbar-brand">
+                <i class="bi bi-robot"></i> PlotBot Studio
+            </span>
+        </div>
+    </nav>
+    
+    <div class="container main-container">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="draw-tab" data-bs-toggle="tab" data-bs-target="#draw" type="button" role="tab" aria-controls="draw" aria-selected="true">
+                    <i class="bi bi-pen"></i> Draw
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false">
+                    <i class="bi bi-gear"></i> Settings
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="myTabContent">
+            <!-- Draw Tab -->
+            <div class="tab-pane fade show active" id="draw" role="tabpanel" aria-labelledby="draw-tab">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>Upload Image</h4>
+                        <div id="dropzone" class="dropzone">
+                            <input type="file" id="fileInput" style="display: none;" accept=".jpg,.jpeg,.png,.gif">
+                            <div id="dropzone-content">
+                                <i class="bi bi-cloud-arrow-up" style="font-size: 3rem;"></i>
+                                <p>Drop your image here or click to browse</p>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button id="renderBtn" class="btn btn-primary btn-render" disabled>
+                                <i class="bi bi-display"></i> Render in Browser
+                            </button>
+                            <button id="plotBtn" class="btn btn-success btn-plot" disabled>
+                                <i class="bi bi-printer"></i> Send to Plotter
+                            </button>
+                            <button id="stopBtn" class="btn btn-danger btn-stop" disabled>
+                                <i class="bi bi-stop-circle"></i> Stop
+                            </button>
+                        </div>
+                        
+                        <div class="progress-container">
+                            <p id="statusText">Status: Waiting for image</p>
+                            <div class="progress" role="progressbar">
+                                <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+                            </div>
+                            <p id="progressDetails">Segments: 0 | Error: 0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h4>Preview</h4>
+                        <div class="preview-container">
+                            <img id="previewImage" class="preview-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="Preview will appear here">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Tab -->
+            <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Configuration</h4>
+                            <div>
+                                <button id="saveConfigBtn" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Save Configuration
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="config-container">
+                            <form id="configForm">
+                                <!-- Canvas Settings -->
+                                <h5>Canvas Settings</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="canvasWidth" class="form-label">Width</label>
+                                            <input type="number" class="form-control" id="canvasWidth" name="canvas.width">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="canvasHeight" class="form-label">Height</label>
+                                            <input type="number" class="form-control" id="canvasHeight" name="canvas.height">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Scribble Settings -->
+                                <h5 class="mt-4">Scribble Settings</h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="minSegments" class="form-label">Min Segments</label>
+                                            <input type="number" class="form-control" id="minSegments" name="scribble.min_segments">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="maxSegments" class="form-label">Max Segments</label>
+                                            <input type="number" class="form-control" id="maxSegments" name="scribble.max_segments">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="improvementThreshold" class="form-label">Improvement Threshold</label>
+                                            <input type="number" step="0.0001" class="form-control" id="improvementThreshold" name="scribble.improvement_threshold">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Segment Settings -->
+                                <h5 class="mt-4">Segment Settings</h5>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="lengthMin" class="form-label">Length Min</label>
+                                            <input type="number" class="form-control" id="lengthMin" name="segment.length_min">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="lengthMax" class="form-label">Length Max</label>
+                                            <input type="number" class="form-control" id="lengthMax" name="segment.length_max">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="deltaMin" class="form-label">Delta Min</label>
+                                            <input type="number" step="0.1" class="form-control" id="deltaMin" name="segment.delta_min">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="deltaMax" class="form-label">Delta Max</label>
+                                            <input type="number" step="0.1" class="form-control" id="deltaMax" name="segment.delta_max">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Stroke Settings -->
+                                <h5 class="mt-4">Stroke Settings</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="thickness" class="form-label">Thickness</label>
+                                            <input type="number" class="form-control" id="thickness" name="stroke.thickness">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="respectWhiteAreas" class="form-label">Respect White Areas</label>
+                                            <select class="form-select" id="respectWhiteAreas" name="stroke.respect_white_areas">
+                                                <option value="true">Yes</option>
+                                                <option value="false">No</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Plotter Settings -->
+                                <h5 class="mt-4">Plotter Settings</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="serialPort" class="form-label">Serial Port</label>
+                                            <input type="text" class="form-control" id="serialPort" name="plotter.serial_port" placeholder="Leave empty for auto-detect">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="baudrate" class="form-label">Baudrate</label>
+                                            <input type="number" class="form-control" id="baudrate" name="plotter.baudrate">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="xMin" class="form-label">X Min</label>
+                                            <input type="number" class="form-control" id="xMin" name="plotter.x_min">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="xMax" class="form-label">X Max</label>
+                                            <input type="number" class="form-control" id="xMax" name="plotter.x_max">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="yMin" class="form-label">Y Min</label>
+                                            <input type="number" class="form-control" id="yMin" name="plotter.y_min">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="yMax" class="form-label">Y Max</label>
+                                            <input type="number" class="form-control" id="yMax" name="plotter.y_max">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="zUp" class="form-label">Z Up</label>
+                                            <input type="number" class="form-control" id="zUp" name="plotter.z_up">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="zDown" class="form-label">Z Down</label>
+                                            <input type="number" class="form-control" id="zDown" name="plotter.z_down">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="feedrate" class="form-label">Feedrate</label>
+                                            <input type="number" class="form-control" id="feedrate" name="plotter.feedrate">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>PlotBot Web Studio @ maakleerplek &copy; 2025</p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Global variables
+            let currentImage = null;
+            let sessionId = null;
+            let progressInterval = null;
+            let previewInterval = null;
+            
+            // DOM elements
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+            const renderBtn = document.getElementById('renderBtn');
+            const plotBtn = document.getElementById('plotBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const previewImage = document.getElementById('previewImage');
+            const statusText = document.getElementById('statusText');
+            const progressBar = document.getElementById('progressBar');
+            const progressDetails = document.getElementById('progressDetails');
+            const configForm = document.getElementById('configForm');
+            const saveConfigBtn = document.getElementById('saveConfigBtn');
+            
+            // Initialize form with config values
+            fetchConfig();
+            
+            // Event listeners for drag and drop
+            dropzone.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    uploadFile(e.target.files[0]);
+                }
+            });
+            
+            dropzone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            });
+            
+            dropzone.addEventListener('dragleave', function() {
+                dropzone.classList.remove('dragover');
+            });
+            
+            dropzone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) {
+                    uploadFile(e.dataTransfer.files[0]);
+                }
+            });
+            
+            // Button event listeners
+            renderBtn.addEventListener('click', startRendering);
+            plotBtn.addEventListener('click', startPlotting);
+            stopBtn.addEventListener('click', stopProcess);
+            saveConfigBtn.addEventListener('click', saveConfig);
+            
+            // Functions
+            function uploadFile(file) {
+                if (!file) return;
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentImage = data.filepath;
+                        sessionId = data.session_id;
+                        
+                        // Update UI
+                        dropzone.innerHTML = `<p><i class="bi bi-check-circle"></i> ${file.name} uploaded successfully</p>`;
+                        statusText.textContent = `Status: Image uploaded`;
+                        
+                        // Show preview
+                        let reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewImage.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                        
+                        // Enable buttons
+                        renderBtn.disabled = false;
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error uploading file. Please try again.');
+                });
+            }
+            
+            function startRendering() {
+                if (!currentImage) return;
+                
+                fetch('/start_rendering', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        statusText.textContent = 'Status: Rendering in progress...';
+                        renderBtn.disabled = true;
+                        plotBtn.disabled = true;
+                        stopBtn.disabled = false;
+                        
+                        // Start progress polling
+                        startProgressPolling();
+                        startPreviewPolling();
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error starting rendering. Please try again.');
+                });
+            }
+            
+            function startPlotting() {
+                if (!currentImage) return;
+                
+                fetch('/start_plotting', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        statusText.textContent = 'Status: Plotting in progress...';
+                        renderBtn.disabled = true;
+                        plotBtn.disabled = true;
+                        stopBtn.disabled = false;
+                        
+                        // Start progress polling
+                        startProgressPolling();
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error starting plotting. Please try again.');
+                });
+            }
+            
+            function stopProcess() {
+                fetch('/stop_rendering', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(() => {
+                    return fetch('/stop_plotting', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({})
+                    });
+                })
+                .then(() => {
+                    statusText.textContent = 'Status: Process stopped';
+                    stopProgressPolling();
+                    stopPreviewPolling();
+                    
+                    renderBtn.disabled = false;
+                    plotBtn.disabled = false;
+                    stopBtn.disabled = true;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error stopping process. Please try again.');
+                });
+            }
+            
+            function startProgressPolling() {
+                if (progressInterval) {
+                    clearInterval(progressInterval);
+                }
+                
+                progressInterval = setInterval(updateProgress, 1000);
+            }
+            
+            function stopProgressPolling() {
+                if (progressInterval) {
+                    clearInterval(progressInterval);
+                    progressInterval = null;
+                }
+            }
+            
+            function startPreviewPolling() {
+                if (previewInterval) {
+                    clearInterval(previewInterval);
+                }
+                
+                previewInterval = setInterval(updatePreview, 5000);
+            }
+            
+            function stopPreviewPolling() {
+                if (previewInterval) {
+                    clearInterval(previewInterval);
+                    previewInterval = null;
+                }
+            }
+            
+            function updateProgress() {
+                fetch('/get_progress')
+                .then(response => response.json())
+                .then(data => {
+                    progressBar.style.width = `${data.percent_complete}%`;
+                    progressDetails.textContent = `Segments: ${data.total_segments} | Error: ${data.current_error}`;
+                    statusText.textContent = `Status: ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}`;
+                    
+                    if (data.status === 'completed' || data.status === 'error' || data.status === 'stopped') {
+                        stopProgressPolling();
+                        stopPreviewPolling();
+                        
+                        renderBtn.disabled = false;
+                        plotBtn.disabled = false;
+                        stopBtn.disabled = true;
+                        
+                        if (data.status === 'error' && data.error) {
+                            alert(`Error: ${data.error}`);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+            
+            function updatePreview() {
+                fetch('/get_preview')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        previewImage.src = data.preview_url;
+                        
+                        // Enable plot button once we have a preview
+                        plotBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+            
+            function fetchConfig() {
+                fetch('/get_config')
+                .then(response => response.json())
+                .then(config => {
+                    populateConfigForm(config);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+            
+            function populateConfigForm(config) {
+                // Canvas settings
+                document.getElementById('canvasWidth').value = config.canvas?.width || '';
+                document.getElementById('canvasHeight').value = config.canvas?.height || '';
+                
+                // Scribble settings
+                document.getElementById('minSegments').value = config.scribble?.min_segments || '';
+                document.getElementById('maxSegments').value = config.scribble?.max_segments || '';
+                document.getElementById('improvementThreshold').value = config.scribble?.improvement_threshold || '';
+                
+                // Segment settings
+                document.getElementById('lengthMin').value = config.segment?.length_min || '';
+                document.getElementById('lengthMax').value = config.segment?.length_max || '';
+                document.getElementById('deltaMin').value = config.segment?.delta_min || '';
+                document.getElementById('deltaMax').value = config.segment?.delta_max || '';
+                
+                // Stroke settings
+                document.getElementById('thickness').value = config.stroke?.thickness || '';
+                const respectWhiteAreas = config.stroke?.respect_white_areas;
+                if (respectWhiteAreas !== undefined) {
+                    document.getElementById('respectWhiteAreas').value = respectWhiteAreas.toString();
+                }
+                
+                // Plotter settings
+                document.getElementById('serialPort').value = config.plotter?.serial_port || '';
+                document.getElementById('baudrate').value = config.plotter?.baudrate || '';
+                document.getElementById('xMin').value = config.plotter?.x_min || '';
+                document.getElementById('xMax').value = config.plotter?.x_max || '';
+                document.getElementById('yMin').value = config.plotter?.y_min || '';
+                document.getElementById('yMax').value = config.plotter?.y_max || '';
+                document.getElementById('zUp').value = config.plotter?.z_up || '';
+                document.getElementById('zDown').value = config.plotter?.z_down || '';
+                document.getElementById('feedrate').value = config.plotter?.feedrate || '';
+            }
+            
+            function saveConfig() {
+                const formData = new FormData(configForm);
+                const config = {};
+                
+                for (const [key, value] of formData.entries()) {
+                    const path = key.split('.');
+                    let current = config;
+                    
+                    for (let i = 0; i < path.length - 1; i++) {
+                        if (!current[path[i]]) {
+                            current[path[i]] = {};
+                        }
+                        current = current[path[i]];
+                    }
+                    
+                    // Convert values to appropriate types
+                    let typedValue = value;
+                    if (value === 'true') typedValue = true;
+                    else if (value === 'false') typedValue = false;
+                    else if (!isNaN(value) && value !== '') typedValue = Number(value);
+                    
+                    current[path[path.length - 1]] = typedValue;
+                }
+                
+                fetch('/update_config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Configuration saved successfully!');
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error saving configuration. Please try again.');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,37 +1,25 @@
-scribble:
-  min_segments: 3
-  max_segments: 200
-  improvement_threshold: 0.0001   # Stop if overall improvement is less than 1%
-
-segment:
-  length_min: 10 
-  length_max: 30
-  delta_min: -2.0   # was -pi/2
-  delta_max: 2.0    # was pi/2
-
-stroke:
-  thickness: 1
-  respect_white_areas: true  # New option to prevent drawing on white areas
-
-colors:
-  - [0, 0, 0]         # black
-
-candidates:
-  segment: 20         # number of candidate segments per step
-  start: 2000          # number of candidate starting positions for new scribbles
-
-plotter:
-  serial_port: ""     # leave empty to auto-search for /dev/cu.usb*
-  baudrate: 115200
-  x_min: 10 
-  x_max: 260
-  y_min: 10 
-  y_max: 260
-  z_up: 28
-  z_down: 23 
-  g92: [270, 0, 45]
-  feedrate: 20000
-
 canvas:
-  width: 1000 
-  height: 1000
+  height: 800
+  width: 800
+plotter:
+  baudrate: 115200
+  feedrate: 20000
+  serial_port: ''
+  x_max: 260
+  x_min: 10
+  y_max: 260
+  y_min: 10
+  z_down: 23
+  z_up: 33
+scribble:
+  improvement_threshold: 0.0001
+  max_segments: 9
+  min_segments: 1
+segment:
+  delta_max: 1
+  delta_min: -1
+  length_max: 34
+  length_min: 10
+stroke:
+  respect_white_areas: true
+  thickness: 1
