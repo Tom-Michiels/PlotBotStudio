@@ -30,31 +30,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Web Interface (GUI)
-
-![GUI](Demo/gui.png)
-
-The easiest way to use PlotBotStudio is through its web-based interface:
-```bash
-python web-interface.py
-```
-
-This will start a local web server.   Open your browser and navigate to:
-```bash
-http://localhost:5000
-```
-
-Through the web interface, you can:
-
-- Upload images
-- Adjust drawing parameters
-- Preview the drawing process in real-time
-- Generate G-code files
-- Control connected plotters
-
-
-
-### Commandline Simulation Mode
+### Simulation Mode
 
 To run in simulation mode (no plotter connection):
 
